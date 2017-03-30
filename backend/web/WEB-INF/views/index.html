@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title th:text="'Spring page!'">Static page</title>
+</head>
+<body>
+<h1 th:text="'Hello Spring!!!'">Hello static page!</h1>
+<div th:text="${hello}" th:remove="${hello}?none:all"><p>Fail say hello!</p><p>I am simple string!</p></div>
+<a th:href="@{/a/b/c}">abc</a>
+<a th:href="@{/a/b/c/{link}(link='fork')}">hello</a>
+<a th:href="@{/c/{int}/a(int=155)}">hello</a>
+</body>
+</html>

@@ -1,0 +1,38 @@
+# See http://help.github.com/ignore-files/ for more about ignoring files.
+
+# compiled output
+/frontend/target
+/frontend/dist
+/frontend/tmp
+/frontend/out-tsc
+
+# dependencies
+/angular2/node_modules
+
+# IDEs and editors
+/.idea
+/backend/target
+/backend/.project
+/backend/.classpath
+/backend/.c9/
+*.launch
+/backend/.settings/
+*.sublime-workspace
+*.iml
+
+# misc
+/frontend/.sass-cache
+/frontend/connect.lock
+/frontend/coverage
+/frontend/libpeerconnection.log
+/frontend/npm-debug.log
+/frontend/testem.log
+/frontend/typings
+
+# e2e
+/frontend/e2e/*.js
+/frontend/e2e/*.map
+
+# System Files
+.DS_Store
+Thumbs.db
