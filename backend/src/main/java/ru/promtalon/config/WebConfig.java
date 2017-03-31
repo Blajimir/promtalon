@@ -6,13 +6,9 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-/**
- * Created by blajimir on 08.02.2017.
- * This is OK!
- */
 @Configuration
 @EnableWebMvc
-@ComponentScan({"ru.promtalon.controller"})
+@ComponentScan({"ru.promtalon.config","ru.promtalon.controller"})
 public class WebConfig extends WebMvcConfigurerAdapter {
 
     @Override
