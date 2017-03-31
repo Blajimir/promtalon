@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "./dist/out-tsc",
+    "outDir": "../target/promtalon/resources",
     "baseUrl": "src",
     "sourceMap": true,
     "declaration": false,
