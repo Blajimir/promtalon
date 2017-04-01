@@ -18,7 +18,7 @@ import java.util.Properties;
 
 @Configuration
 @EnableTransactionManagement
-@PropertySource("classpath: persistent.properties")
+@PropertySource(value = {"classpath:persistent.properties"})
 @EnableJpaRepositories(basePackages = {"ru.promtalon.dao"})
 public class PersistenceJPAConfig {
     @Autowired

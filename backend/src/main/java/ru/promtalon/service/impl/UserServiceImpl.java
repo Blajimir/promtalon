@@ -1,11 +1,13 @@
 package ru.promtalon.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.promtalon.dao.UserDAO;
 import ru.promtalon.entity.Role;
 import ru.promtalon.entity.User;
 import ru.promtalon.service.UserService;
 
+@Service
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserDAO userDAO;

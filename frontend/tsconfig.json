@@ -1,7 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "outDir": "../target/promtalon/resources",
+    "outDir": "../target/frontend/resources",
     "baseUrl": "src",
     "sourceMap": true,
     "declaration": false,
