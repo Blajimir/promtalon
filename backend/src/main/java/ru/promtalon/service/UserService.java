@@ -4,7 +4,10 @@ import ru.promtalon.entity.Role;
 import ru.promtalon.entity.User;
 
 public interface UserService {
+    void initBaseRoles();
     User getUser(long id);
+    User getUserByUsername(String name);
+    User regNewUser(User user);
     User updateUser(User user);
     User createUser(User user);
     void deleteUser(long id);
