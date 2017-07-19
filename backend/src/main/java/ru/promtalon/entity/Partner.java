@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "partners")
@@ -16,10 +17,12 @@ public class Partner implements Serializable {
     private long id;
     @OneToOne(fetch = FetchType.EAGER)
     private Client client;
-    @OneToOne(fetch = FetchType.EAGER)
     private Address address;
-    @OneToOne(fetch = FetchType.EAGER)
     private Contact contact;
     private String siteLink;
     private boolean enabled;
+    @Basic(optional = false)
+    @Column(insertable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date regDate;
 }

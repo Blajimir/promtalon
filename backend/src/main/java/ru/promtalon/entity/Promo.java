@@ -22,7 +22,7 @@ public class Promo implements Serializable{
     @ManyToOne(fetch = FetchType.EAGER)
     private Partner partner;
     private String iconUri;
-    private String content;
+    private String details;
     private boolean enable;
     private Date startDate;
     private Date endDate;

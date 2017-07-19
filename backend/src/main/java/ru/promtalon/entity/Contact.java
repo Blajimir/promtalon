@@ -5,22 +5,19 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.List;
 
-@Entity
-@Table(name = "contacts")
+@Embeddable
 @Data
 @NoArgsConstructor
 public class Contact  implements Serializable {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Pattern(regexp = ".+@.+\\..+")
     private String email;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean emailAccept;
-    @OneToOne(fetch = FetchType.EAGER)
-    private Phone phone;
+    private String phone;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private boolean phoneAccept;
 }
