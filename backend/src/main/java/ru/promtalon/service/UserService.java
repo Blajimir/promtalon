@@ -14,4 +14,6 @@ public interface UserService {
     User deleteUser(User user);
     User invokeRole(User user, Role role);
     User revokeRole(User user, Role role);
+    User invokeRole(User user, String roleName);
+    User revokeRole(User user, String roleName);
 }

@@ -8,5 +8,5 @@ public interface RoleDao extends JpaRepository<Role, Long> {
     @Query("select case when count(r)>0 then 'true' else 'false' end from Role r where r.name = ?1")
     boolean existRoleByName(String name);
 
-    Role findRoleByName(String name);
+    Role findByName(String name);
 }

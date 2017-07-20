@@ -24,11 +24,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void initBaseRoles() {
-        if (!this.roleDao.existRoleByName("ROLE_USER")) {
-            roleDao.save(new Role("ROLE_USER"));
-        }
-        if (!this.roleDao.existRoleByName("ROLE_ADMIN")) {
-            roleDao.save(new Role("ROLE_ADMIN"));
+        final String[] roles = {
+                "ROLE_USER",
+                "ROLE_ADMIN",
+                "ROLE_PARTNER",
+                "ROLE_MANAGER",
+                "ROLE_NEWSMAKER"
+        };
+        for(String name : roles){
+            if (!this.roleDao.existRoleByName(name)) {
+                roleDao.save(new Role(name));
+            }
         }
     }
 
@@ -42,11 +48,11 @@ public class UserServiceImpl implements UserService {
         return userDao.getUserByUsername(name);
     }
 
-    //TODO: Данная функция нужна реализовывает логику регистрации нового пользователя
+    //TODO: Данная функция реализовывает логику регистрации нового пользователя
     //ее необходимо усложнить реализовав подтверждение регистрации
     @Override
     public User regNewUser(User user) {
-        user.setRoles(Stream.of(roleDao.findRoleByName("ROLE_USER")).collect(Collectors.toList()));
+        user.setRoles(Stream.of(roleDao.findByName("ROLE_USER")).collect(Collectors.toList()));
         user.setEnable(true);
         return createUser(user);
     }
@@ -55,7 +61,8 @@ public class UserServiceImpl implements UserService {
     public User updateUser(User user) {
         User lastUser = userDao.getOne(user.getId());
         if (lastUser!=null) {
-            user.
+            user.setPassword(lastUser.getPassword());
+            user.setRoles(lastUser.getRoles());
             return userDao.save(user);
         }
         return null;
@@ -83,6 +90,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User invokeRole(User user, Role role) {
+        user = userDao.findOne(user.getId());
         if (user != null && userDao.exists(user.getId()) && !user.getRoles().contains(role)) {
             user.getRoles().add(role);
             userDao.save(user);
@@ -92,10 +100,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User revokeRole(User user, Role role) {
+        user = userDao.findOne(user.getId());
         if (user != null && userDao.exists(user.getId()) && user.getRoles().contains(role)) {
             user.getRoles().remove(role);
             userDao.save(user);
         }
         return user;
+    }
+
+    @Override
+    public User invokeRole(User user, String roleName) {
+        return invokeRole(user, roleDao.findByName(roleName));
+    }
+
+    @Override
+    public User revokeRole(User user, String roleName) {
+        return revokeRole(user, roleDao.findByName(roleName));
     }
 }

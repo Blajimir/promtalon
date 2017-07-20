@@ -4,20 +4,21 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "promo_operations")
+@Table(name = "accept_coupon_operations")
 @Data
 @NoArgsConstructor
-public class PromoOperation implements Serializable {
+public class AcceptCouponOperation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
-    @Column(updatable = false)
-    @OneToOne(fetch = FetchType.EAGER)
+    @NotNull
+    @OneToOne
     private CouponOperation couponOperation;
-    @Column(updatable = false)
-    @ManyToOne()
-    private Promo promo;
+    @NotNull
+    @Column(unique = true)
+    private String acceptCode;
 }
