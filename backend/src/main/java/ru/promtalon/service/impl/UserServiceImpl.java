@@ -9,7 +9,10 @@ import ru.promtalon.dao.UserDao;
 import ru.promtalon.entity.Role;
 import ru.promtalon.entity.User;
 import ru.promtalon.service.UserService;
+import ru.promtalon.util.DataAccessUtil;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,7 +34,7 @@ public class UserServiceImpl implements UserService {
                 "ROLE_MANAGER",
                 "ROLE_NEWSMAKER"
         };
-        for(String name : roles){
+        for (String name : roles) {
             if (!this.roleDao.existRoleByName(name)) {
                 roleDao.save(new Role(name));
             }
@@ -60,12 +63,41 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(User user) {
         User lastUser = userDao.getOne(user.getId());
-        if (lastUser!=null) {
+        if (lastUser != null) {
             user.setPassword(lastUser.getPassword());
             user.setRoles(lastUser.getRoles());
             return userDao.save(user);
         }
         return null;
+    }
+
+    @Override
+    public User updateUserIgnoreFields(User user, User newDataUser, List<String> fields) {
+        if (!fields.contains("id")) {
+            fields.add("id");
+        }
+        try {
+            DataAccessUtil.updateIgnoreFields(user, newDataUser, fields);
+            userDao.save(user);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return newDataUser;
+    }
+
+
+    @Override
+    public User updateUserFields(User user, User newDataUser, List<String> fields) {
+        if (!fields.contains("id")) {
+            fields.add("id");
+        }
+        try {
+            DataAccessUtil.updateFields(user, newDataUser, fields);
+            userDao.save(user);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return newDataUser;
     }
 
     @Override
