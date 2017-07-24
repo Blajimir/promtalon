@@ -46,10 +46,6 @@ public class CouponOperation implements Serializable {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @Enumerated(EnumType.STRING)
     private OperationStatus status;
-    @Basic(optional = false)
-    @Column(insertable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    @CreationTimestamp
     @UpdateTimestamp
     private Date regTimestamp;
 }

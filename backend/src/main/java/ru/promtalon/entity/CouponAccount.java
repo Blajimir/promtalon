@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -20,9 +22,11 @@ public class CouponAccount implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @NotNull
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @OneToOne(fetch = FetchType.EAGER)
     private Client client;
     //Количество купонов
+    @Min(0)
     private BigDecimal amount;
 }

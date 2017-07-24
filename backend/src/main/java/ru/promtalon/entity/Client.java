@@ -2,8 +2,12 @@ package ru.promtalon.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -22,9 +26,16 @@ public class Client implements Serializable {
     @Column(updatable = false)
     @OneToOne(fetch = FetchType.EAGER)
     private User user;
+    @NotNull
+    @Length(min = 3)
     private String firstName;
+    @Length(min = 5)
     private String middleName;
+    @NotNull
+    @Length(min = 1)
     private String lastName;
+    @NotNull
+    @Valid
     private Contact contact;
     @Basic(optional = false)
     @Column(insertable = false, updatable = false)

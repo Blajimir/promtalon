@@ -15,6 +15,7 @@ public class Partner implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    private String name;
     @OneToOne(fetch = FetchType.EAGER)
     private Client client;
     private Address address;

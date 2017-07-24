@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -20,10 +21,12 @@ public class User implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
     @NotNull
+    @Length(min = 5)
     private String username;
+    @NotNull
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    private boolean enable;
+    private boolean enabled;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
