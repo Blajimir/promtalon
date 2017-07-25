@@ -11,6 +11,7 @@ import ru.promtalon.service.CouponAccountService;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class CouponAccountServiceImpl implements CouponAccountService {
@@ -26,7 +27,7 @@ public class CouponAccountServiceImpl implements CouponAccountService {
         CouponAccount account = new CouponAccount();
         account.setAmount(amount);
         client = clientDao.getActiveClient(client.getId());
-        if (client!=null) {
+        if (hasAccountWithActiveClientByClientId(client.getId())) {
             account.setClient(client);
             return accountDao.save(account);
         }
@@ -52,6 +53,17 @@ public class CouponAccountServiceImpl implements CouponAccountService {
     public CouponAccount getAccountByClient(long id) {
         return accountDao.getCouponAccountByClient_Id(id);
     }
+
+    @Override
+    public List<CouponAccount> getAllAccount() {
+        return accountDao.findAll();
+    }
+
+    @Override
+    public boolean hasAccountWithActiveClientByClientId(long id) {
+        return accountDao.hasAccountWithActiveClientByClientId(id);
+    }
+
     //TODO: написать логику пополнения
     @Override
     public void refill(long id, BigDecimal amount) {

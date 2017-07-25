@@ -63,9 +63,8 @@ public class ClientServiceImpl implements ClientService {
     public Client deleteClient(long id) {
         Client client = clientDao.findOne(id);
         if (client!=null) {
-            clientDao.delete(id);
+            clientDao.delete(client);
         }
-
         return client;
     }
 

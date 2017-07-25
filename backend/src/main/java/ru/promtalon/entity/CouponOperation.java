@@ -31,11 +31,9 @@ public class CouponOperation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(updatable = false)
     @ManyToOne(fetch = FetchType.EAGER)
     //Отправитель
     private CouponAccount sender;
-    @Column(updatable = false)
     @ManyToOne(fetch = FetchType.EAGER)
     //Получатель
     private CouponAccount receiver;

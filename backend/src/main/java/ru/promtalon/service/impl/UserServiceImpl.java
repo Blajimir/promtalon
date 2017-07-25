@@ -55,8 +55,8 @@ public class UserServiceImpl implements UserService {
     //ее необходимо усложнить реализовав подтверждение регистрации
     @Override
     public User regNewUser(User user) {
-        user.setRoles(Stream.of(roleDao.findByName("ROLE_USER")).collect(Collectors.toList()));
-        user.setEnable(true);
+        user.setRoles(Stream.of(roleDao.findByName("ROLE_USER")).collect(Collectors.toSet()));
+        user.setEnabled(true);
         return createUser(user);
     }
 

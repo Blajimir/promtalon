@@ -2,6 +2,7 @@ package ru.promtalon.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -22,8 +23,6 @@ public class Partner implements Serializable {
     private Contact contact;
     private String siteLink;
     private boolean enabled;
-    @Basic(optional = false)
-    @Column(insertable = false, updatable = false)
-    @Temporal(TemporalType.TIMESTAMP)
+    @CreationTimestamp
     private Date regDate;
 }

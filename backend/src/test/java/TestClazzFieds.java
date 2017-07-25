@@ -5,7 +5,9 @@ import ru.promtalon.util.DataAccessUtil;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TestClazzFieds {
     @Test
@@ -14,8 +16,8 @@ public class TestClazzFieds {
         user.setId(1);
         user.setUsername("Astrew");
         user.setPassword("asasasas");
-        user.setEnable(true);
-        List<Role> roles = new ArrayList<>();
+        user.setEnabled(true);
+        Set<Role> roles = new HashSet<>();
         Role role = new Role();
         role.setId(1);
         role.setName("ROLE_USER");

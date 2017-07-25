@@ -14,10 +14,8 @@ public class PromoOperation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
-    @Column(updatable = false)
     @OneToOne(fetch = FetchType.EAGER)
     private CouponOperation couponOperation;
-    @Column(updatable = false)
     @ManyToOne()
     private Promo promo;
 }

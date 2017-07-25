@@ -27,7 +27,6 @@ public class BankingOperation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long id;
-    @Column(updatable = false)
     @OneToOne(fetch = FetchType.EAGER)
     private CouponOperation couponOperation;
     //количество переведенных средств
