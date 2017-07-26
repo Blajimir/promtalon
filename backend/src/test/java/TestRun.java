@@ -1,4 +1,5 @@
 import org.junit.Test;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
@@ -8,6 +9,9 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class TestRun {
+    private String chars = "0123456789ABCHKMPTX";
+    private Random random = new Random();
+    private Md5PasswordEncoder passwordEncoder = new Md5PasswordEncoder();
     @Test
     public void test(){
         System.out.println("path "+ TestRun.class.getProtectionDomain().getCodeSource().
@@ -22,14 +26,13 @@ public class TestRun {
             if(tokens.contains(token)) collision++;
             tokens.add(token);
             System.out.println(token);
+            System.out.println(passwordEncoder.encodePassword(token,i));
         }
         System.out.println("Collisions: "+collision);
 
     }
 
     public String getToken(int length){
-        String chars = "0123456789";
-        Random random = new Random();
         StringBuilder token = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             token.append(chars.charAt(random.nextInt(chars.length())));

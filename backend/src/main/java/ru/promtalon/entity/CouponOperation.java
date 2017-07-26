@@ -7,9 +7,13 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
+/*
+* Сервис для манипуляции с куппонными операциями
+* */
 @Entity
 @Table(name = "coupon_operations")
 @Data
@@ -38,12 +42,23 @@ public class CouponOperation implements Serializable {
     //Получатель
     private CouponAccount receiver;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @NotNull
     @Column(updatable = false)
     @Enumerated(EnumType.STRING)
     private OperationType type;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @NotNull
     @Enumerated(EnumType.STRING)
     private OperationStatus status;
-    @UpdateTimestamp
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @NotNull
+    @Column(updatable = false)
+    private long amount;
+    @NotNull
+    @Column(updatable = false)
+    private long commission;
+    @CreationTimestamp
     private Date regTimestamp;
+    @UpdateTimestamp
+    private Date changeTimestamp;
 }

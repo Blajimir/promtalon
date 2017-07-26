@@ -1,5 +1,6 @@
 package ru.promtalon.service.impl;
 
+import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.promtalon.dao.ClientDao;
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
+@Log
 public class CouponAccountServiceImpl implements CouponAccountService {
 
     @Autowired
@@ -64,14 +66,38 @@ public class CouponAccountServiceImpl implements CouponAccountService {
         return accountDao.hasAccountWithActiveClientByClientId(id);
     }
 
-    //TODO: написать логику пополнения
     @Override
-    public void refill(long id, BigDecimal amount) {
+    public void refill(long id, BigDecimal amount) throws Exception {
+        if(id>0&&amount.intValue()>0){
+            CouponAccount account = accountDao.getOne(id);
+            BigDecimal a = account.getAmount();
+            account.setAmount(a.add(amount));
+        }else{
 
+        }
     }
-    //TODO: написать логику списания
+    /*
+    * Реализация алгоритма списания купонов со счета
+    * */
     @Override
-    public void debit(long id, BigDecimal amount) {
+    public void debit(long id, BigDecimal amount) throws Exception {
+        if(id>0&&amount.intValue()>0){
+            CouponAccount account = accountDao.getOne(id);
+            BigDecimal a = account.getAmount();
 
+            if(a.longValue()<amount.longValue()){
+                account.setAmount(a.subtract(amount));
+            }else{
+                String msg = String.format("счет id:%d не может содержать меньше чем " +
+                                "количество списовыемых купоновб! состояние счета:%s количество списываемых средств:%s",
+                        id,a,amount);
+                log.warning(msg);
+                throw new Exception(msg);
+            }
+        }else{
+            String msg = String.format("account id and amount should not be null! id:%d amount:%s",id,amount);
+            log.warning(msg);
+            throw new Exception(msg);
+        }
     }
 }

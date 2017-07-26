@@ -14,9 +14,9 @@ public interface CouponAccountService {
     List<CouponAccount> getAllAccount();
     boolean hasAccountWithActiveClientByClientId(long id);
     //Пополнение
-    void refill(long id, BigDecimal amount);
+    void refill(long id, BigDecimal amount) throws Exception;
     //Списание
-    void debit(long id, BigDecimal amount);
+    void debit(long id, BigDecimal amount) throws Exception;
 
 
 

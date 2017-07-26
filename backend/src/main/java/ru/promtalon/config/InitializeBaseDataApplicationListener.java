@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 import ru.promtalon.service.UserService;
 
 /***
- * Инициализация базовых ролей в БД чере ApplicationListener
+ * Инициализация базовых данных в БД чере ApplicationListener
  */
 @Component
-public class InitializeBaseRoleApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
+public class InitializeBaseDataApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
     @Autowired
     private UserService userService;

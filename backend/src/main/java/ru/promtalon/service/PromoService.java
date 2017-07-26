@@ -10,4 +10,5 @@ public interface PromoService {
     Promo deletePromo(Promo promo);
     PromoOperation buyPromo(long id, Client user);
     void cancelBuyPromo(PromoOperation promoOperation);
+
 }

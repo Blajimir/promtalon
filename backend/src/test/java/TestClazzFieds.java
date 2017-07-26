@@ -4,6 +4,7 @@ import ru.promtalon.entity.User;
 import ru.promtalon.util.DataAccessUtil;
 
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +36,16 @@ public class TestClazzFieds {
         System.out.println("user after update: " + user);
         DataAccessUtil.updateIgnoreFields(newData, user, new String[]{"id","roles"});
         System.out.println("user after updateIgnoreFields: " + user);
+    }
+
+    @Test
+    public void testAmount(){
+        BigDecimal a = new BigDecimal(10);
+        System.out.println("begin num: "+a);
+        a = a.add(new BigDecimal(5));
+        System.out.println("after add num: "+a);
+        a = a.subtract(new BigDecimal(8));
+        System.out.println("after minus num: "+a);
     }
 
     public void getAllFieds(Object obj) {

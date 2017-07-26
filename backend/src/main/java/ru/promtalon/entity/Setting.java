@@ -19,6 +19,6 @@ public class Setting implements Serializable {
     @Column(unique = true)
     private String name;
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name="setting_properties", joinColumns=@JoinColumn(name="banking_operations_id"))
+    @CollectionTable(name="setting_properties", joinColumns=@JoinColumn(name="settings_id"))
     Map<String,String> props;
 }

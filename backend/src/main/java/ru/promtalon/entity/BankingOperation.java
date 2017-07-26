@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -35,6 +36,10 @@ public class BankingOperation implements Serializable {
     //текущий курс
     @Column(updatable = false)
     private int rate;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private OperationStatus status;
     @JsonIgnore
     @Column(updatable = false)
     @ElementCollection(fetch = FetchType.EAGER)

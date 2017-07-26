@@ -21,6 +21,11 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 public class Client implements Serializable {
+    public enum Gender{
+        MALE,
+        FEMALE,
+        UNKNOWN
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
@@ -34,6 +39,10 @@ public class Client implements Serializable {
     @NotNull
     @Length(min = 1)
     private String lastName;
+    private Date birthday;
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
     @NotNull
     @Valid
     private Contact contact;
