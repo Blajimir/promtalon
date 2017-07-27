@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -52,6 +53,7 @@ public class CouponOperation implements Serializable {
     private OperationStatus status;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     @NotNull
+    @Min(0)
     @Column(updatable = false)
     private long amount;
     @NotNull

@@ -1,11 +1,12 @@
 package ru.promtalon.service;
 
 import ru.promtalon.entity.AcceptCouponOperation;
+import ru.promtalon.entity.Client;
 import ru.promtalon.entity.CouponOperation;
 
 public interface AcceptCouponOperationService {
     AcceptCouponOperation addAcceptCouponOperation(CouponOperation operation);
     AcceptCouponOperation refreshAcceptCouponOperation(CouponOperation operation);
     AcceptCouponOperation deleteAcceptCouponOperation(CouponOperation operation);
-    boolean acceptCouponOperation(CouponOperation operation, String code);
+    CouponOperation acceptCouponOperation(Client client, long operation_id, String code);
 }

@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class TestRun {
-    private String chars = "0123456789ABCHKMPTX";
+    private String chars = "0123456789";
     private Random random = new Random();
     private Md5PasswordEncoder passwordEncoder = new Md5PasswordEncoder();
     @Test
@@ -21,12 +21,12 @@ public class TestRun {
     public void testCodegen(){
         List<String> tokens = new ArrayList<>();
         int collision = 0;
-        for (int i = 0; i < 1000; i++) {
-            String token = getToken(8);
+        for (int i = 0; i < 30000; i++) {
+            String token = tryUniqCodeForSender(tokens);
             if(tokens.contains(token)) collision++;
             tokens.add(token);
             System.out.println(token);
-            System.out.println(passwordEncoder.encodePassword(token,i));
+            //System.out.println(passwordEncoder.encodePassword(token,i));
         }
         System.out.println("Collisions: "+collision);
 
@@ -38,6 +38,18 @@ public class TestRun {
             token.append(chars.charAt(random.nextInt(chars.length())));
         }
         return token.toString();
+    }
+
+    private String tryUniqCodeForSender( List<String> acceptList) {
+        String code = getToken(8);
+        if (acceptList.size() > 0)
+            for (int i = 0; i < 10; i++) {
+                String finalCode = code;
+                if (acceptList.stream().anyMatch(item -> item.equals(finalCode))) {
+                    code = getToken(8);
+                } else break;
+            }
+        return code;
     }
 
 }

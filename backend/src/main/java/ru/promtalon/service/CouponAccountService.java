@@ -10,6 +10,7 @@ public interface CouponAccountService {
     CouponAccount createAccount(Client client, BigDecimal amount);
     CouponAccount deleteAccount(long id);
     CouponAccount getAccount(long id);
+    CouponAccount getEnabledAccountWithConfirmContacts(long id);
     CouponAccount getAccountByClient(long id);
     List<CouponAccount> getAllAccount();
     boolean hasAccountWithActiveClientByClientId(long id);

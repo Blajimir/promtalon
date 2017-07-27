@@ -1,17 +1,21 @@
 package ru.promtalon.service.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.promtalon.dao.AcceptCouponOperationDao;
 import ru.promtalon.entity.AcceptCouponOperation;
+import ru.promtalon.entity.Client;
 import ru.promtalon.entity.CouponOperation;
 import ru.promtalon.service.AcceptCouponOperationService;
 import ru.promtalon.service.CouponOperationService;
+import ru.promtalon.service.MailService;
+import ru.promtalon.service.SmsService;
 import ru.promtalon.util.NumberCodeGenerator;
 
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.util.TreeMap;
+
+import static ru.promtalon.entity.CouponOperation.OperationType.*;
 
 @Service
 public class AcceptCouponOperationServiceImpl implements AcceptCouponOperationService {
@@ -23,17 +27,22 @@ public class AcceptCouponOperationServiceImpl implements AcceptCouponOperationSe
     @Autowired
     private NumberCodeGenerator numberCodeGenerator;
     @Autowired
-    private Md5PasswordEncoder md5PasswordEncoder;
+    private SmsService smsService;
+    @Autowired
+    private MailService mailService;
+
     @Override
     public AcceptCouponOperation addAcceptCouponOperation(@NotNull CouponOperation operation) {
         AcceptCouponOperation result = null;
         operation = operationService.getOperation(operation.getId());
-        if(operation!=null){
+        if (operation != null) {
             result = new AcceptCouponOperation();
             result.setCouponOperation(operation);
-            String code = numberCodeGenerator.getToken();
-            result.setAcceptCode(code);
-            acceptDao.save(result);
+            TreeMap<Long, String> code = getUniqCode(operation);
+            result.setAcceptCode(code.firstEntry().getValue());
+            result = acceptDao.save(result);
+            smsService.sendSms(operation.getSender().getClient(), transformCodeForSender(code));
+            mailService.sendMail(operation.getSender().getClient(), "confirm code", transformCodeForSender(code));
         }
         return result;
     }
@@ -49,16 +58,35 @@ public class AcceptCouponOperationServiceImpl implements AcceptCouponOperationSe
     }
 
     @Override
-    public boolean acceptCouponOperation(CouponOperation operation, String code) {
-        return false;
+    public CouponOperation acceptCouponOperation(Client client, long operation_id, String code) {
+        AcceptCouponOperation acceptOperation = acceptDao.findByCouponOperation_IdAndAcceptCode(operation_id, code);
+        CouponOperation operation = null;
+        if (acceptOperation != null) {
+            operation = acceptOperation.getCouponOperation();
+            if ((operation.getType() == TRANSFER && equilsClients(client, operation.getSender().getClient())) ||
+                    (operation.getType() == PAYMENT && equilsClients(client, operation.getReceiver().getClient()))) {
+                acceptDao.delete(acceptOperation);
+            } else {
+                operation = null;
+            }
+        }
+        return operation;
     }
 
-    private String tryUniqCodeForSender(CouponOperation operation){
-        String code = numberCodeGenerator.getToken();
-        List<AcceptCouponOperation> acceptList
-        for (int i = 0; i < 10; i++) {
+    //@Lock(LockModeType.READ)
+    private TreeMap<Long, String> getUniqCode(CouponOperation operation) {
+        TreeMap<Long, String> singletonTreeMap = new TreeMap<>();
+        singletonTreeMap.put(operation.getId(), numberCodeGenerator.getToken());
+        return singletonTreeMap;
+    }
 
-        }
-        return code;
+    private String transformCodeForSender(TreeMap<Long, String> code) {
+        return code.firstEntry().getValue() + "-" + code.firstKey();
+    }
+
+    private boolean equilsClients(Client a, Client b) {
+        boolean result = false;
+        if (a != null && b != null && a.getId() == b.getId()) result = true;
+        return result;
     }
 }

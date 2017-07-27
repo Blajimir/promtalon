@@ -57,6 +57,11 @@ public class CouponAccountServiceImpl implements CouponAccountService {
     }
 
     @Override
+    public CouponAccount getEnabledAccountWithConfirmContacts(long id) {
+        return null;
+    }
+
+    @Override
     public List<CouponAccount> getAllAccount() {
         return accountDao.findAll();
     }

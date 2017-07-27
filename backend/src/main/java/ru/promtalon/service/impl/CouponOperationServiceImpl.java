@@ -1,7 +1,10 @@
 package ru.promtalon.service.impl;
 
+import com.sun.istack.internal.Nullable;
 import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import ru.promtalon.dao.CouponOperationDao;
 import ru.promtalon.entity.Client;
@@ -71,16 +74,24 @@ public class CouponOperationServiceImpl implements CouponOperationService {
 
     @Override
     public List<CouponOperation> getAllOperations() {
-        return null;
+        return operationDao.findAll();
     }
 
     @Override
-    public List<CouponOperation> getAllOperationsBySender(CouponAccount sender, CouponOperation couponOperation) {
-        return null;
+    public List<CouponOperation> getAllOperationsBySender(@NotNull CouponAccount sender, @Nullable CouponOperation.OperationType type) {
+        ExampleMatcher matcher = ExampleMatcher.matchingAll().withMatcher("sender",
+                ExampleMatcher.GenericPropertyMatcher::contains);
+        if (type != null) matcher.withMatcher("type", ExampleMatcher.GenericPropertyMatcher::contains);
+        matcher.withIgnoreNullValues();
+        CouponOperation operation = new CouponOperation();
+        operation.setSender(sender);
+        Example<CouponOperation> example = Example.of(operation, matcher);
+        return operationDao.findAll(example);
     }
 
     @Override
     public List<CouponOperation> getAllOperationsByReceiver(CouponAccount receiver, CouponOperation couponOperation) {
+
         return null;
     }
 
@@ -104,7 +115,7 @@ public class CouponOperationServiceImpl implements CouponOperationService {
     public CouponOperation addTransferOperation(@NotNull CouponAccount sender, @NotNull CouponAccount receiver, long amount) {
         sender = accountService.getAccount(sender.getId());
         receiver = accountService.getAccount(receiver.getId());
-        if (sender != null && receiver != null && amount > 0) {
+        if (sender != null && receiver != null && sender.getClient().getUser().isEnabled() && amount > 0) {
             try {
                 accountService.debit(sender.getId(), new BigDecimal(amount));
                 CouponOperation operation = new CouponOperation();
@@ -112,15 +123,15 @@ public class CouponOperationServiceImpl implements CouponOperationService {
                 operation.setType(CouponOperation.OperationType.TRANSFER);
                 operation.setSender(sender);
                 operation.setReceiver(receiver);
-                operation.setAmount(amount);
                 long commission = 1;//TODO: Написать алгоритм получения коммиссии за перевод из настроек приложения
                 if (amount - commission < 1) {
                     String msg = String.format("Количество купонов передаваемых купонов не может быть " +
-                            "равным или меньше коммисси за операцию! senderId:%d amount:%d commission:%d"
-                            ,sender.getId(),amount,commission);
+                                    "равным или меньше коммисси за операцию! senderId:%d amount:%d commission:%d"
+                            , sender.getId(), amount, commission);
                     log.warning(msg);
                     throw new Exception(msg);
                 }
+                operation.setAmount(amount);
                 operation.setCommission(commission);
                 acceptService.addAcceptCouponOperation(operation);
             } catch (Exception e) {
@@ -132,20 +143,16 @@ public class CouponOperationServiceImpl implements CouponOperationService {
     }
 
     @Override
-    public CouponOperation cancelOperation(CouponAccount sender) {
-        return null;
-    }
-
-    @Override
-    public CouponOperation cancelOperation(Client sender) {
-        return null;
+    @Transactional
+    public CouponOperation cancelOperationBySender(@NotNull CouponOperation operation) {
+        //TODO: Добавить проверку на то что sender не равен нулю
+        return this.operationDao.getByIdAndSender_Client_Id(operation.getId(),operation.getSender().getClient().getId());
     }
 
     @Override
     @Transactional
     public CouponOperation cancelOperation(@NotNull CouponOperation operation) {
-        operation = getOperation(operation.getId());
-        if (operation != null && operation.getStatus() == CouponOperation.OperationStatus.FREEZE) {
+        if (operation.getStatus() == CouponOperation.OperationStatus.FREEZE) {
             try {
                 accountService.refill(operation.getSender().getId(), new BigDecimal(operation.getAmount()));
             } catch (Exception e) {
@@ -154,28 +161,25 @@ public class CouponOperationServiceImpl implements CouponOperationService {
             }
             operation.setStatus(CouponOperation.OperationStatus.CANCELED);
             operation = saveOperation(operation);
-        }
+        }else operation = null;
         return operation;
     }
 
     @Override
-    public CouponOperation completeOperation(CouponAccount sender, String successCode) {
-        return null;
-    }
-
-    @Override
-    public CouponOperation completeOperation(Client sender, String successCode) {
-        return null;
+    @Transactional
+    public CouponOperation addConvertOperation(CouponOperation couponOperation) {
+        couponOperation.setType(CouponOperation.OperationType.CONVERT);
+        return addOperation(couponOperation);
     }
 
     @Override
     @Transactional
-    public CouponOperation completeOperation(CouponOperation operation, String successCode) {
-        operation = getOperation(operation.getId());
+    public CouponOperation completeTransformAndPaymentOperation(Client client, long operation_id, String successCode) {
+        CouponOperation operation = this.acceptService.acceptCouponOperation(client, operation_id, successCode);
         if (operation != null && operation.getStatus() == CouponOperation.OperationStatus.FREEZE) {
             try {
                 accountService.refill(operation.getReceiver().getId(),
-                        new BigDecimal(operation.getAmount()-operation.getCommission()));
+                        new BigDecimal(operation.getAmount() - operation.getCommission()));
             } catch (Exception e) {
                 log.warning(e.getMessage());
                 e.printStackTrace();
@@ -185,4 +189,5 @@ public class CouponOperationServiceImpl implements CouponOperationService {
         }
         return operation;
     }
+
 }

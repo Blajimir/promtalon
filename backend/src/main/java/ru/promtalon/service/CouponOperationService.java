@@ -4,6 +4,8 @@ import ru.promtalon.entity.Client;
 import ru.promtalon.entity.CouponAccount;
 import ru.promtalon.entity.CouponOperation;
 
+import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 public interface CouponOperationService {
@@ -22,7 +24,7 @@ public interface CouponOperationService {
 
     List<CouponOperation> getAllOperations();
 
-    List<CouponOperation> getAllOperationsBySender(CouponAccount sender, CouponOperation couponOperation);
+    List<CouponOperation> getAllOperationsBySender(CouponAccount sender, CouponOperation.OperationType type);
 
     List<CouponOperation> getAllOperationsByReceiver(CouponAccount receiver, CouponOperation couponOperation);
 
@@ -34,16 +36,13 @@ public interface CouponOperationService {
 
     CouponOperation addTransferOperation(CouponAccount sender, CouponAccount receiver, long amount);
 
+    @Transactional
+    CouponOperation cancelOperationBySender(@NotNull CouponOperation operation);
+
     CouponOperation cancelOperation(CouponOperation operation);
 
-    CouponOperation cancelOperation(CouponAccount sender);
+    CouponOperation addConvertOperation(CouponOperation couponOperation);
 
-    CouponOperation cancelOperation(Client sender);
-
-    CouponOperation completeOperation(CouponOperation operation, String successCode);
-
-    CouponOperation completeOperation(CouponAccount sender, String successCode);
-
-    CouponOperation completeOperation(Client sender, String successCode);
+    CouponOperation completeTransformAndPaymentOperation(Client client, long operation_id,String successCode);
 
 }
