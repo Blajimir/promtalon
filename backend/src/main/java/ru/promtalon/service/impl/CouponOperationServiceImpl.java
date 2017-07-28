@@ -7,6 +7,7 @@ import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import ru.promtalon.dao.CouponOperationDao;
+import ru.promtalon.entity.AcceptCouponOperation;
 import ru.promtalon.entity.Client;
 import ru.promtalon.entity.CouponAccount;
 import ru.promtalon.entity.CouponOperation;
@@ -112,34 +113,37 @@ public class CouponOperationServiceImpl implements CouponOperationService {
 
     @Override
     @Transactional
-    public CouponOperation addTransferOperation(@NotNull CouponAccount sender, @NotNull CouponAccount receiver, long amount) {
-        sender = accountService.getAccount(sender.getId());
-        receiver = accountService.getAccount(receiver.getId());
-        if (sender != null && receiver != null && sender.getClient().getUser().isEnabled() && amount > 0) {
+    public CouponOperation addTransferOperation(@NotNull Client sender, @NotNull Client receiver, long amount) {
+        CouponOperation result = null;
+        CouponAccount acctSender = accountService.getEnabledAccountWithConfirmContacts(sender.getId());
+        CouponAccount acctReceiver = accountService.getEnabledAccountWithConfirmContacts(receiver.getId());
+        if (acctSender != null && acctReceiver != null && amount > 0) {
             try {
                 accountService.debit(sender.getId(), new BigDecimal(amount));
                 CouponOperation operation = new CouponOperation();
                 operation.setStatus(CouponOperation.OperationStatus.FREEZE);
                 operation.setType(CouponOperation.OperationType.TRANSFER);
-                operation.setSender(sender);
-                operation.setReceiver(receiver);
+                operation.setSender(acctSender);
+                operation.setReceiver(acctReceiver);
                 long commission = 1;//TODO: Написать алгоритм получения коммиссии за перевод из настроек приложения
                 if (amount - commission < 1) {
                     String msg = String.format("Количество купонов передаваемых купонов не может быть " +
                                     "равным или меньше коммисси за операцию! senderId:%d amount:%d commission:%d"
-                            , sender.getId(), amount, commission);
+                            , acctSender.getId(), amount, commission);
                     log.warning(msg);
                     throw new Exception(msg);
                 }
                 operation.setAmount(amount);
                 operation.setCommission(commission);
-                acceptService.addAcceptCouponOperation(operation);
+                operation = this.addOperation(operation);
+                AcceptCouponOperation acceptOperation = acceptService.addAcceptCouponOperation(operation);
+                result = acceptOperation.getCouponOperation();
             } catch (Exception e) {
                 log.warning(e.getMessage());
                 e.printStackTrace();
             }
         }
-        return null;
+        return result;
     }
 
     @Override

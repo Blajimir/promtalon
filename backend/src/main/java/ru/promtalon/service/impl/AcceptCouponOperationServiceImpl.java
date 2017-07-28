@@ -34,16 +34,13 @@ public class AcceptCouponOperationServiceImpl implements AcceptCouponOperationSe
     @Override
     public AcceptCouponOperation addAcceptCouponOperation(@NotNull CouponOperation operation) {
         AcceptCouponOperation result = null;
-        operation = operationService.getOperation(operation.getId());
-        if (operation != null) {
-            result = new AcceptCouponOperation();
-            result.setCouponOperation(operation);
-            TreeMap<Long, String> code = getUniqCode(operation);
-            result.setAcceptCode(code.firstEntry().getValue());
-            result = acceptDao.save(result);
-            smsService.sendSms(operation.getSender().getClient(), transformCodeForSender(code));
-            mailService.sendMail(operation.getSender().getClient(), "confirm code", transformCodeForSender(code));
-        }
+        result = new AcceptCouponOperation();
+        result.setCouponOperation(operation);
+        TreeMap<Long, String> code = getUniqCode(operation);
+        result.setAcceptCode(code.firstEntry().getValue());
+        result = acceptDao.save(result);
+        smsService.sendSms(operation.getSender().getClient(), transformCodeForSender(code));
+        mailService.sendMail(operation.getSender().getClient(), "confirm code", transformCodeForSender(code));
         return result;
     }
 

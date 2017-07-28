@@ -29,7 +29,7 @@ public class CouponAccountServiceImpl implements CouponAccountService {
         CouponAccount account = new CouponAccount();
         account.setAmount(amount);
         client = clientDao.getActiveClient(client.getId());
-        if (hasAccountWithActiveClientByClientId(client.getId())) {
+        if (client!=null) {
             account.setClient(client);
             return accountDao.save(account);
         }
@@ -58,7 +58,7 @@ public class CouponAccountServiceImpl implements CouponAccountService {
 
     @Override
     public CouponAccount getEnabledAccountWithConfirmContacts(long id) {
-        return null;
+        return accountDao.getEnabledAccountWithConfirmContacts(id);
     }
 
     @Override
@@ -77,9 +77,9 @@ public class CouponAccountServiceImpl implements CouponAccountService {
             CouponAccount account = accountDao.getOne(id);
             BigDecimal a = account.getAmount();
             account.setAmount(a.add(amount));
-        }else{
+        }/*else{
 
-        }
+        }*/
     }
     /*
     * Реализация алгоритма списания купонов со счета
@@ -88,14 +88,14 @@ public class CouponAccountServiceImpl implements CouponAccountService {
     public void debit(long id, BigDecimal amount) throws Exception {
         if(id>0&&amount.intValue()>0){
             CouponAccount account = accountDao.getOne(id);
-            BigDecimal a = account.getAmount();
+            BigDecimal acc = account.getAmount();
 
-            if(a.longValue()<amount.longValue()){
-                account.setAmount(a.subtract(amount));
+            if(acc.longValue()>=amount.longValue()){
+                account.setAmount(acc.subtract(amount));
             }else{
                 String msg = String.format("счет id:%d не может содержать меньше чем " +
-                                "количество списовыемых купоновб! состояние счета:%s количество списываемых средств:%s",
-                        id,a,amount);
+                                "количество списовыемых купонов! состояние счета:%d количество списываемых средств:%d",
+                        id,acc.longValue(),amount.longValue());
                 log.warning(msg);
                 throw new Exception(msg);
             }

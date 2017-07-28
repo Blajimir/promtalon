@@ -29,7 +29,7 @@ public class Client implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne
     private User user;
     @NotNull
     @Length(min = 3)
@@ -45,6 +45,7 @@ public class Client implements Serializable {
     private Gender gender;
     @NotNull
     @Valid
+    @Embedded
     private Contact contact;
     @CreationTimestamp
     private Date regDate;

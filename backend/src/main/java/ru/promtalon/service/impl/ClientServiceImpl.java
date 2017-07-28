@@ -51,7 +51,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public Client getClient(long id) {
         if (id<1) return null;
-        return clientDao.getOne(id);
+        return clientDao.findOne(id);
     }
 
     @Override

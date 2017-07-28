@@ -34,10 +34,9 @@ public interface CouponOperationService {
 
     List<CouponOperation> getAllSenderOperationsByStatusAndType(Client sender, CouponOperation.OperationStatus status);
 
-    CouponOperation addTransferOperation(CouponAccount sender, CouponAccount receiver, long amount);
+    CouponOperation addTransferOperation(Client sender, Client receiver, long amount);
 
-    @Transactional
-    CouponOperation cancelOperationBySender(@NotNull CouponOperation operation);
+    CouponOperation cancelOperationBySender(CouponOperation operation);
 
     CouponOperation cancelOperation(CouponOperation operation);
 
