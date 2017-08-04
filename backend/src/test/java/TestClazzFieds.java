@@ -1,16 +1,21 @@
+import org.junit.Before;
 import org.junit.Test;
 import ru.promtalon.entity.Role;
 import ru.promtalon.entity.User;
 import ru.promtalon.util.DataAccessUtil;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TestClazzFieds {
+    private Properties props;
+    @Before
+    public void setProperties() throws IOException {
+        props = new Properties();
+        props.load(ClassLoader.class.getResourceAsStream("/persistent.properties"));
+    }
     @Test
     public void testFields() throws IllegalAccessException {
         User user = new User();
@@ -46,6 +51,11 @@ public class TestClazzFieds {
         System.out.println("after add num: "+a);
         a = a.subtract(new BigDecimal(8));
         System.out.println("after minus num: "+a);
+    }
+
+    @Test
+    public void testProps(){
+        System.out.println("test prop: "+ props.getProperty("jdbc.postgres.url"));
     }
 
     public void getAllFieds(Object obj) {

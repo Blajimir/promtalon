@@ -7,6 +7,6 @@ import ru.promtalon.entity.CouponOperation;
 public interface AcceptCouponOperationService {
     AcceptCouponOperation addAcceptCouponOperation(CouponOperation operation);
     AcceptCouponOperation refreshAcceptCouponOperation(CouponOperation operation);
-    AcceptCouponOperation deleteAcceptCouponOperation(CouponOperation operation);
+    void deleteAcceptCouponOperation(CouponOperation operation);
     CouponOperation acceptCouponOperation(Client client, long operation_id, String code);
 }

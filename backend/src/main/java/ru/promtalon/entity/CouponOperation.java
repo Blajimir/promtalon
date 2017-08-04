@@ -36,10 +36,10 @@ public class CouponOperation implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     //Отправитель
     private CouponAccount sender;
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     //Получатель
     private CouponAccount receiver;
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

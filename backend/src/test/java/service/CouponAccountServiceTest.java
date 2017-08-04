@@ -5,19 +5,23 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.transaction.TransactionSystemException;
 import ru.promtalon.config.WebConfig;
 import ru.promtalon.entity.*;
 import ru.promtalon.service.*;
+import ru.promtalon.service.exception.CouponAccountException;
+import ru.promtalon.service.impl.MockSmsServiceImpl;
 
+import javax.persistence.RollbackException;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -34,6 +38,9 @@ public class CouponAccountServiceTest {
 
     @Autowired
     private MockSmsServiceImpl smsService;
+
+    private volatile Map<Date, String> operations = new HashMap<>();
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
 
     @Test
     @Transactional
@@ -109,23 +116,64 @@ public class CouponAccountServiceTest {
         System.out.println("Petia amount: " + accountService.getAccountByClient(acctPetia.getClient().getId()).getAmount());
         System.out.println("Code: " + smsService.getCode());
     }
+
+    @Test
+    @Rollback(false)
+    public void couponOperationTxTest() {
+        CouponAccount acctVasia = getRegAcct("Vasia", "12345", "5552255",
+                "aa@bb.cc", "Vasiliy", "Vasiliev", 5L);
+
+        CouponAccount acctPetia = getRegAcct("Petia", "12345", "5552225",
+                "aaaa@bb.cc", "Petr", "Petrov", 10L);
+        CouponOperation operation = null;
+        try {
+            operation = operationService.addTransferOperation(acctVasia.getClient(), acctPetia.getClient(), 7L);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+        }
+        Assert.assertNull("wrong operation create", operation);
+
+        System.out.println("Vasia amount: " + accountService.getAccountByClient(acctVasia.getClient().getId()).getAmount());
+        System.out.println("Petia amount: " + accountService.getAccountByClient(acctPetia.getClient().getId()).getAmount());
+        System.out.println("Code: " + smsService.getCode());
+    }
+
     @Test()
     @Rollback(false)
     public void couponOperationConcurentTest() {
-        CouponAccount acctV = getRegAcct("Vasia", "12345", "5552255",
+        CouponAccount acctVu = getRegAcct("Vasia", "12345", "5552255",
                 "aa@bb.cc", "Vasiliy", "Vasiliev", 100L);
 
-        CouponAccount acctP = getRegAcct("Petia", "12345", "5552225",
+        CouponAccount acctPu = getRegAcct("Petia", "12345", "5552225",
                 "aaaa@bb.cc", "Petr", "Petrov", 100L);
 
         //noinspection Duplicates
-        Thread trV = getThread(acctV,acctP,50);
+        Thread trV = getThread(acctVu, acctPu, 50);
         //noinspection Duplicates
-        Thread trP = getThread(acctP,acctV,50);
-        trP.start();
+        Thread trP = getThread(acctPu, acctVu, 50);
         trV.start();
-    }
+        trP.start();
 
+        while (trV.isAlive() || trV.isAlive()) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        //this.operations.forEach(System.out::println);
+        TreeMap<Date, String> sortMap = new TreeMap<>(Comparator.naturalOrder());
+        sortMap.putAll(operations);
+        sortMap.forEach((aLong, s) -> System.out.println(sdf.format(aLong) + "  --" + s));
+
+        System.out.println(String.format("%s amount: %s", acctVu.getClient().getUser().getUsername(),
+                accountService.getAccountByClient(acctVu.getClient().getId()).getAmount()));
+
+        System.out.println(String.format("%s amount: %s", acctPu.getClient().getUser().getUsername(),
+                accountService.getAccountByClient(acctPu.getClient().getId()).getAmount()));
+
+        System.out.println("end!");
+    }
 
 
     @Ignore
@@ -157,25 +205,56 @@ public class CouponAccountServiceTest {
     }
 
     @Ignore
-    public Thread getThread(CouponAccount acctV, CouponAccount acctP, int loop){
+    public Thread getThread(CouponAccount acctV, CouponAccount acctP, int loop) {
         return new Thread(() -> {
             int l = loop;
             Random random = new Random();
-            List<String> opers = new ArrayList<>();
+            Map<Date, String> opers = new HashMap<>();
+            CouponOperation operation = null;
+            int transferAmount = 2;
+
             while (l > 0) {
-                CouponOperation operation = operationService.addTransferOperation(acctV.getClient(), acctP.getClient(), 2);
                 try {
-                    Thread.sleep(random.nextInt(20));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    operation = operationService.addTransferOperation(acctV.getClient(), acctP.getClient(), transferAmount);
+                    opers.put(new Date(), String.format("Время:%s Операция id: %d, перевод %dпт от %s на счету было: %d стало: %d",
+                            sdf.format(operation.getRegTimestamp()), operation.getId(), operation.getAmount(),
+                            operation.getSender().getClient().getUser().getUsername(),
+                            operation.getSender().getAmount().intValue() + transferAmount, operation.getSender().getAmount().intValue()));
+                    while (true) {
+                        try {
+                            Thread.sleep(random.nextInt(50)+50);
+                            CouponOperation couponOperation = operationService.completeTransformAndPaymentOperation(acctV.getClient(), operation.getId(),
+                                    smsService.getCodes().get(acctV.getClient().getId()).split("-")[0]);
+                            opers.put(new Date(), String.format("Время:%s Операция id: %d, поступление %dпт к %s на счету: %d",
+                                    sdf.format(couponOperation.getChangeTimestamp()), operation.getId(), couponOperation.getAmount(),
+                                    couponOperation.getReceiver().getClient().getUser().getUsername(),
+                                    couponOperation.getReceiver().getAmount().intValue()));
+                            l--;
+                            break;
+                        } catch (Exception e) {
+                            System.err.println("Rollback when completeTransformAndPaymentOperation operation details: " + e.getMessage());
+                        }
+                        try {
+                            CouponOperation couponOperation = operationService.cancelOperation(operation);
+                            opers.put(new Date(), String.format("Время:%s Операция id: %d, отмена и возврат %dпт к %s на счету: %d",
+                                    sdf.format(couponOperation.getChangeTimestamp()), operation.getId(), couponOperation.getAmount(),
+                                    couponOperation.getSender().getClient().getUser().getUsername(),
+                                    couponOperation.getSender().getAmount().intValue()));
+                            l--;
+                            break;
+                        } catch (Exception e) {
+                            System.err.println("Rollback when cancelOperation operation details: " + e.getMessage());
+                        }
+                    }
+                } catch (CouponAccountException e) {
+                    System.err.println("CouponAccountException Rollback when addTransferOperation operation details: " + e.getMessage() + " class: " + e.getClass().getName());
+                    break;
+                } catch (Exception e) {
+                    System.err.println("Rollback when addTransferOperation operation details: " + e.getMessage());
                 }
-                opers.add(operationService.completeTransformAndPaymentOperation(acctV.getClient(), operation.getId(),
-                        smsService.getCodes().get(acctV.getClient().getId()).split("-")[0]).toString());
-                l--;
+
             }
-            opers.forEach(System.out::println);
-            System.out.println(String.format("%s amount: %s", acctV.getClient().getUser().getUsername(),
-                    accountService.getAccountByClient(acctV.getClient().getId()).getAmount()));
+            this.operations.putAll(opers);
         });
     }
 

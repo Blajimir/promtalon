@@ -5,7 +5,11 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.promtalon.dao.CouponOperationDao;
 import ru.promtalon.entity.AcceptCouponOperation;
 import ru.promtalon.entity.Client;
@@ -14,8 +18,9 @@ import ru.promtalon.entity.CouponOperation;
 import ru.promtalon.service.AcceptCouponOperationService;
 import ru.promtalon.service.CouponAccountService;
 import ru.promtalon.service.CouponOperationService;
+import ru.promtalon.service.exception.CouponAccountException;
 
-import javax.transaction.Transactional;
+import javax.persistence.LockModeType;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,7 +52,7 @@ public class CouponOperationServiceImpl implements CouponOperationService {
 
     @Override
     public CouponOperation getOperation(long id) {
-        if (id > 0) return operationDao.getOne(id);
+        if (id > 0) return operationDao.findOne(id);
         return null;
     }
 
@@ -112,49 +117,43 @@ public class CouponOperationServiceImpl implements CouponOperationService {
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW, timeout = 5)
     public CouponOperation addTransferOperation(@NotNull Client sender, @NotNull Client receiver, long amount) {
         CouponOperation result = null;
+        if(sender.getId()==receiver.getId()) throw new CouponAccountException("sender and receiver not be equals");
         CouponAccount acctSender = accountService.getEnabledAccountWithConfirmContacts(sender.getId());
         CouponAccount acctReceiver = accountService.getEnabledAccountWithConfirmContacts(receiver.getId());
-        if (acctSender != null && acctReceiver != null && amount > 0) {
-            try {
-                accountService.debit(sender.getId(), new BigDecimal(amount));
-                CouponOperation operation = new CouponOperation();
-                operation.setStatus(CouponOperation.OperationStatus.FREEZE);
-                operation.setType(CouponOperation.OperationType.TRANSFER);
-                operation.setSender(acctSender);
-                operation.setReceiver(acctReceiver);
-                long commission = 1;//TODO: Написать алгоритм получения коммиссии за перевод из настроек приложения
-                if (amount - commission < 1) {
-                    String msg = String.format("Количество купонов передаваемых купонов не может быть " +
-                                    "равным или меньше коммисси за операцию! senderId:%d amount:%d commission:%d"
-                            , acctSender.getId(), amount, commission);
-                    log.warning(msg);
-                    throw new Exception(msg);
-                }
-                operation.setAmount(amount);
-                operation.setCommission(commission);
-                operation = this.addOperation(operation);
-                AcceptCouponOperation acceptOperation = acceptService.addAcceptCouponOperation(operation);
-                result = acceptOperation.getCouponOperation();
-            } catch (Exception e) {
-                log.warning(e.getMessage());
-                e.printStackTrace();
+        if (acctSender != null && acctReceiver != null && acctReceiver.getId()!=acctSender.getId() && amount > 0) {
+            CouponOperation operation = new CouponOperation();
+            operation.setStatus(CouponOperation.OperationStatus.FREEZE);
+            operation.setType(CouponOperation.OperationType.TRANSFER);
+            operation.setSender(acctSender);
+            operation.setReceiver(acctReceiver);
+            long commission = 1;//TODO: Написать алгоритм получения коммиссии за перевод из настроек приложения
+            if (amount - commission < 1) {
+                String msg = String.format("Количество купонов передаваемых купонов не может быть " +
+                                "равным или меньше коммисси за операцию! senderId:%d amount:%d commission:%d"
+                        , acctSender.getId(), amount, commission);
+                log.warning(msg);
+                throw new CouponAccountException(msg);
             }
+            operation.setAmount(amount);
+            operation.setCommission(commission);
+            operation = this.addOperation(operation);
+            accountService.debit(operation.getSender().getId(), new BigDecimal(amount));
+            AcceptCouponOperation acceptOperation = acceptService.addAcceptCouponOperation(operation);
+            result = acceptOperation.getCouponOperation();
         }
         return result;
     }
 
     @Override
-    @Transactional
     public CouponOperation cancelOperationBySender(@NotNull CouponOperation operation) {
-        //TODO: Добавить проверку на то что sender не равен нулю
-        return this.operationDao.getByIdAndSender_Client_Id(operation.getId(),operation.getSender().getClient().getId());
+        return cancelOperation(this.operationDao.getByIdAndSender_Client_Id(operation.getId(),operation.getSender().getClient().getId()));
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW, timeout = 5)
     public CouponOperation cancelOperation(@NotNull CouponOperation operation) {
         if (operation.getStatus() == CouponOperation.OperationStatus.FREEZE) {
             try {
@@ -165,19 +164,19 @@ public class CouponOperationServiceImpl implements CouponOperationService {
             }
             operation.setStatus(CouponOperation.OperationStatus.CANCELED);
             operation = saveOperation(operation);
+            acceptService.deleteAcceptCouponOperation(operation);
         }else operation = null;
         return operation;
     }
 
     @Override
-    @Transactional
     public CouponOperation addConvertOperation(CouponOperation couponOperation) {
         couponOperation.setType(CouponOperation.OperationType.CONVERT);
         return addOperation(couponOperation);
     }
 
     @Override
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE, propagation = Propagation.REQUIRES_NEW, timeout = 5)
     public CouponOperation completeTransformAndPaymentOperation(Client client, long operation_id, String successCode) {
         CouponOperation operation = this.acceptService.acceptCouponOperation(client, operation_id, successCode);
         if (operation != null && operation.getStatus() == CouponOperation.OperationStatus.FREEZE) {

@@ -50,8 +50,10 @@ public class AcceptCouponOperationServiceImpl implements AcceptCouponOperationSe
     }
 
     @Override
-    public AcceptCouponOperation deleteAcceptCouponOperation(CouponOperation operation) {
-        return null;
+    public void deleteAcceptCouponOperation(CouponOperation operation) {
+        if (operation!=null){
+        acceptDao.delete(acceptDao.findByCouponOperation_Id(operation.getId()));
+        }
     }
 
     @Override

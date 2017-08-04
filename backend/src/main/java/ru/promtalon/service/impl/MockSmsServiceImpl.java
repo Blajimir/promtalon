@@ -1,7 +1,8 @@
-package ru.promtalon.service;
+package ru.promtalon.service.impl;
 
 import org.springframework.stereotype.Service;
 import ru.promtalon.entity.Client;
+import ru.promtalon.service.SmsService;
 
 import java.util.HashMap;
 import java.util.Map;
