@@ -123,6 +123,23 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
+    @Transactional
+    public Client updateMail(Client client, String mail) {
+        if(!client.getContact().getEmail().equals(mail)){
+            client.getContact().setEmail(mail);
+            client.getContact().setEmailAccept(false);
+            clientDao.save(client);
+
+        }
+        return null;
+    }
+
+    @Override
+    public Client updatePhone(Client client, String phone) {
+        return null;
+    }
+
+    @Override
     public Client updateClientFields(Client client, Client newDataClient, List<String> fields) {
         try {
             DataAccessUtil.updateFields(client,newDataClient,fields);

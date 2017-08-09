@@ -8,6 +8,7 @@ import java.util.List;
 public interface UserService {
     void initBaseRoles();
     User getUser(long id);
+    List<User> getUsers();
     User getUserByUsername(String name);
     User regNewUser(User user);
     User updateUser(User user);

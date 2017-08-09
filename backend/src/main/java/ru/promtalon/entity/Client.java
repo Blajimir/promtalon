@@ -7,7 +7,6 @@ import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -29,6 +28,7 @@ public class Client implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @Valid
     @OneToOne
     private User user;
     @NotNull
@@ -49,9 +49,4 @@ public class Client implements Serializable {
     private Contact contact;
     @CreationTimestamp
     private Date regDate;
-    //TODO Подумать, стоит или нет добавлять это поле сюда (скорее всего нет)
-    /*@ReadOnlyProperty
-    @OneToOne(fetch = FetchType.EAGER)
-    //Личный счет купонов
-    private BigDecimal acct;*/
 }

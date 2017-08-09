@@ -5,7 +5,6 @@ import lombok.extern.java.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
-import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -20,7 +19,6 @@ import ru.promtalon.service.CouponAccountService;
 import ru.promtalon.service.CouponOperationService;
 import ru.promtalon.service.exception.CouponAccountException;
 
-import javax.persistence.LockModeType;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;

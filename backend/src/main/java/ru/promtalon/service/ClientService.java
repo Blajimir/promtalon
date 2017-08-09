@@ -16,6 +16,8 @@ public interface ClientService {
     Client blockClient(long id);
     Client unblockClient(long id);
     Client updateClient(Client client);
+    Client updateMail(Client client, String mail);
+    Client updatePhone(Client client, String phone);
     Client updateClientFields(Client client, Client  newDataClient, List<String> fields);
     Client updateClientIgnoreFields(Client client, Client  newDataClient, List<String> fields);
 }
