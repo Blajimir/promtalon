@@ -6,6 +6,8 @@ import ru.promtalon.dao.SettingsDao;
 import ru.promtalon.entity.Setting;
 import ru.promtalon.service.SettingService;
 
+import java.util.HashMap;
+
 @Service
 public class SettingServiceImpl implements SettingService {
 
@@ -14,7 +16,13 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public void initBaseSettings() {
-
+        Setting systemSetting = new Setting();
+        systemSetting.setName("system");
+        systemSetting.setProps(new HashMap<>());
+        systemSetting.getProps().put("Promo_commission","1");
+        //systemSetting.getProps().put("accesscode_length","8");
+        systemSetting.setId(0);
+        settingsDao.save(systemSetting);
     }
 
     @Override
@@ -25,6 +33,16 @@ public class SettingServiceImpl implements SettingService {
     @Override
     public Setting getSettingByName(String name) {
         return settingsDao.findByName(name);
+    }
+
+    @Override
+    public String getPropertyByName(String settingName, String property) {
+        String result = null;
+        Setting setting = getSettingByName(settingName);
+        if(setting!=null){
+            result = setting.getProps().get(property);
+        }
+        return result;
     }
 
     @Override

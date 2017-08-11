@@ -10,13 +10,11 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.promtalon.dao.CouponOperationDao;
-import ru.promtalon.entity.AcceptCouponOperation;
-import ru.promtalon.entity.Client;
-import ru.promtalon.entity.CouponAccount;
-import ru.promtalon.entity.CouponOperation;
+import ru.promtalon.entity.*;
 import ru.promtalon.service.AcceptCouponOperationService;
 import ru.promtalon.service.CouponAccountService;
 import ru.promtalon.service.CouponOperationService;
+import ru.promtalon.service.SettingService;
 import ru.promtalon.service.exception.CouponAccountException;
 
 import javax.validation.constraints.NotNull;
@@ -33,6 +31,8 @@ public class CouponOperationServiceImpl implements CouponOperationService {
     private CouponAccountService accountService;
     @Autowired
     private AcceptCouponOperationService acceptService;
+    @Autowired
+    private SettingService settingService;
 
     @Override
     public CouponOperation addOperation(@NotNull CouponOperation couponOperation) {
@@ -127,7 +127,7 @@ public class CouponOperationServiceImpl implements CouponOperationService {
             operation.setType(CouponOperation.OperationType.TRANSFER);
             operation.setSender(acctSender);
             operation.setReceiver(acctReceiver);
-            long commission = 1;//TODO: Написать алгоритм получения коммиссии за перевод из настроек приложения
+            long commission = Long.valueOf(settingService.getPropertyByName("system", "Promo_commission"));
             if (amount - commission < 1) {
                 String msg = String.format("Количество купонов передаваемых купонов не может быть " +
                                 "равным или меньше коммисси за операцию! senderId:%d amount:%d commission:%d"

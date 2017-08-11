@@ -5,13 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import ru.promtalon.entity.AcceptOperation;
 import ru.promtalon.entity.Client;
 import ru.promtalon.service.ClientService;
 import ru.promtalon.service.MyUserDetailsService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,11 +78,22 @@ public class ClientController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping(path="/api/client/mail/me")
+    @PostMapping(path="/api/client/me/reset")
     @ResponseBody
-    public Client updateMailMyClient(@RequestBody @NotNull Client client){
+    public Object resetMyClient(@RequestBody @NotNull AcceptOperation acceptOperation){
         //TODO: добавить в сервис ф-цию обновления почты
-        return null;
+        clientService.resetOperation(getCurrentClient(),acceptOperation.getType(),acceptOperation.getContact());
+        return Collections.singletonMap("Success", true);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping(path="/api/client/me/accept")
+    @ResponseBody
+    public Object resetMyClient(@RequestBody @NotNull Map<String, String > data){
+        //TODO: добавить в сервис ф-цию обновления почты
+        clientService.acceptUpdate(getCurrentClient(), AcceptOperation.OperationType.valueOf(data.get("type")),
+                data.get("code"),data.get("value"));
+        return Collections.singletonMap("Success", true);
     }
 
 }

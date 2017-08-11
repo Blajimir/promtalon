@@ -174,7 +174,7 @@ public class CouponAccountServiceTest {
 
 
     @Ignore
-    public Client getClient(String username, String pass, String phone, String mail, String firstname, String lastname) {
+    public static Client getClient(String username, String pass, String phone, String mail, String firstname, String lastname) {
         Client client = new Client();
         client.setUser(new User());
         client.setContact(new Contact());

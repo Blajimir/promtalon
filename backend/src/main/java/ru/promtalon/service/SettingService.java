@@ -6,6 +6,7 @@ public interface SettingService {
     void initBaseSettings();
     Setting getSetting(Long id);
     Setting getSettingByName(String name);
+    String getPropertyByName(String settingName, String property);
     Setting createSetting(Setting setting);
     Setting updateSetting(Setting setting);
     void deleteSetting(Long id);

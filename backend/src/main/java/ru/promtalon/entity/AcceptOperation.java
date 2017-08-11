@@ -17,7 +17,7 @@ import java.util.Date;
  */
 
 @Entity
-@Table(name = "accept_operations", uniqueConstraints = @UniqueConstraint(columnNames = {"type", "client"}))
+@Table(name = "accept_operations", uniqueConstraints = @UniqueConstraint(columnNames = {"type", "client_id"}))
 @Data
 @NoArgsConstructor
 public class AcceptOperation implements Serializable {
@@ -36,7 +36,7 @@ public class AcceptOperation implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     @NotNull
-    @OneToOne(optional = false)
+    @ManyToOne(optional = false)
     private Client client;
     @NotNull
     private OperationType type;

@@ -1,6 +1,7 @@
 import org.junit.Test;
 import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
 import org.springframework.util.StringUtils;
+import ru.promtalon.entity.AcceptOperation;
 
 import java.security.SecureRandom;
 import java.util.*;
@@ -12,6 +13,21 @@ public class TestRun {
     private String chars = "0123456789";
     private Random random = new Random();
     private Md5PasswordEncoder passwordEncoder = new Md5PasswordEncoder();
+
+    @Test
+    public void testStream(){
+        List<AcceptOperation.OperationType> typeList = new ArrayList<>();
+        typeList.add(AcceptOperation.OperationType.ACCEPT_MAIL);
+        typeList.add(AcceptOperation.OperationType.ACCEPT_MAIL);
+        typeList.add(AcceptOperation.OperationType.ACCEPT_PHONE);
+        AcceptOperation.OperationType type = typeList.stream()
+                .filter(t -> t == AcceptOperation.OperationType.RESET_PASSWORD).findFirst().orElse(null);
+        System.out.println("Test stream: " + type);
+        type = typeList.stream()
+                .filter(t -> t == AcceptOperation.OperationType.ACCEPT_MAIL).findFirst().orElse(null);
+        System.out.println("Test stream: " + type);
+    }
+
     @Test
     public void test(){
         System.out.println("path "+ TestRun.class.getProtectionDomain().getCodeSource().

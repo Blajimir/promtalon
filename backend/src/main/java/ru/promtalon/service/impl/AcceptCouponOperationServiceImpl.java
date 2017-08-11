@@ -3,6 +3,7 @@ package ru.promtalon.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.promtalon.dao.AcceptCouponOperationDao;
+import ru.promtalon.entity.AcceptCouponOperation;
 import ru.promtalon.entity.Client;
 import ru.promtalon.entity.CouponOperation;
 import ru.promtalon.service.AcceptCouponOperationService;
